@@ -20,7 +20,7 @@ spec:
   persistentVolumeReclaimPolicy: Delete
   storageClassName: local
   local:
-    path: /opt/pihole/etc
+    path: ./etc #/opt/pihole/etc
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -28,7 +28,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - node1
+          - docker-desktop # Hosthome where lives.
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -59,7 +59,7 @@ spec:
   persistentVolumeReclaimPolicy: Delete
   storageClassName: local
   local:
-    path: /opt/pihole/dnsmasq
+    path: ./dnsmasq #/opt/pihole/dnsmasq
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -67,7 +67,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - node1
+          - docker-desktop # Hosthome where lives.
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -122,3 +122,25 @@ spec:
       - name: pihole-local-dnsmasq-volume
         persistentVolumeClaim:
           claimName: pihole-local-dnsmasq-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole
+spec:
+  selector:
+    app: pihole
+  ports:
+  - port: 8000
+    targetPort: 80
+    name: pihole-admin
+  - port: 53
+    targetPort: 53
+    protocol: TCP
+    name: dns-tcp
+  - port: 53
+    targetPort: 53
+    protocol: UDP
+    name: dns-udp
+  externalIPs:
+  - 192.168.10.75 #Static IP I need to assign for the network.
